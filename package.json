@@ -1,6 +1,6 @@
 {
   "name": "is-real-image",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "is-real-image is a lightweight and efficient Node.js package that allows you to verify if a file is a real image based on its extension, signature (magic number), or both. This package ensures that the provided image file is valid by checking the file's extension, inspecting the file's binary signature, or combining both methods for extra security.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -1,14 +1,15 @@
 import IsRealImageError from "./models/errors";
-import { IsRealImageParams } from "./types";
+import { ImageExt, IsRealImageParams, IsRealImageReturnType } from "./types";
 import path from "path";
 import fs from "fs";
 import { getImageInfo } from "./helpers/extractors";
-import { isImageExt, isValidCheckOption } from "./helpers/validators";
+import { isValidCheckOption, isValidImageExt } from "./helpers/validators";
 import { readFileSignature, readFileSignatureSync } from "./helpers/readers";
+import { IMAGES_EXTENSIONS } from "./constants";
 
-async function isRealImage(args: IsRealImageParams) {
+async function isRealImage(args: IsRealImageParams, allowedTypes?: Set<ImageExt>): Promise<IsRealImageReturnType> {
     if (args instanceof Buffer) {
-        return getImageInfo(args);
+        return getImageInfo({buffer: args, allowedTypes}) ?? false;
     }
 
     const { input, check = "header-only" } = args;
@@ -21,7 +22,7 @@ async function isRealImage(args: IsRealImageParams) {
         const ext = path.extname(input).toLowerCase().slice(1);
 
         if (check === "extension-only") {
-            return isImageExt(ext);
+            return isValidImageExt(ext, allowedTypes);
         }
 
         if (!fs.existsSync(input)) {
@@ -33,13 +34,13 @@ async function isRealImage(args: IsRealImageParams) {
             throw new IsRealImageError(`The path "${input}" is not a file. Please provide a valid file path.`);
         }
 
-        if (check === "full-check" && !isImageExt(ext)) {
-            return null;
+        if (check === "full-check" && !isValidImageExt(ext, allowedTypes)) {
+            return false;
         }
 
         try {
             const buffer = await readFileSignature(input);
-            return getImageInfo(buffer, ext);
+            return getImageInfo({buffer, ext, allowedTypes}) ?? false;
         } catch (err) {
             const message = err instanceof Error ? err.message : "Somthing went wrong";
             throw new IsRealImageError(`Failed to read file signature: ${message}`);
@@ -49,9 +50,9 @@ async function isRealImage(args: IsRealImageParams) {
     throw new IsRealImageError(`Invalid argument: expected a Buffer or an object with a valid input string. Received "${typeof args}".`);
 }
 
-function isRealImageSync(args: IsRealImageParams) {
+function isRealImageSync(args: IsRealImageParams, allowedTypes?: Set<ImageExt>): IsRealImageReturnType {
     if (args instanceof Buffer) {
-        return getImageInfo(args);
+        return getImageInfo({buffer: args, allowedTypes}) ?? false;
     }
 
     const { input, check = "header-only" } = args;
@@ -64,7 +65,7 @@ function isRealImageSync(args: IsRealImageParams) {
         const ext = path.extname(input).toLowerCase().slice(1);
 
         if (check === "extension-only") {
-            return isImageExt(ext);
+            return isValidImageExt(ext, allowedTypes);
         }
 
         if (!fs.existsSync(input)) {
@@ -76,13 +77,13 @@ function isRealImageSync(args: IsRealImageParams) {
             throw new IsRealImageError(`The path "${input}" is not a file. Please provide a valid file path.`);
         }
 
-        if (check === "full-check" && !isImageExt(ext)) {
-            return null;
+        if (check === "full-check" && !isValidImageExt(ext, allowedTypes)) {
+            return false;
         }
 
         try {
             const buffer = readFileSignatureSync(input);
-            return getImageInfo(buffer, ext);
+            return getImageInfo({buffer, ext, allowedTypes}) ?? false;
         } catch (err) {
             const message = err instanceof Error ? err.message : "Somthing went wrong";
             throw new IsRealImageError(`Failed to read file signature: ${message}`);
@@ -92,4 +93,6 @@ function isRealImageSync(args: IsRealImageParams) {
     throw new IsRealImageError(`Invalid argument: expected a Buffer or an object with a valid input string. Received "${typeof args}".`);
 }
 
-export { isRealImage, isRealImageSync, IsRealImageError };
+const extensions = new Set(IMAGES_EXTENSIONS);
+
+export { extensions, isRealImage, isRealImageSync, IsRealImageError, IsRealImageReturnType };

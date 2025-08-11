@@ -29,6 +29,7 @@ export type ImageMimeType =
 
 export type ImageExt = 
   | "png" 
+  | "jpg"
   | "jpeg" 
   | "gif" 
   | "bmp" 
@@ -63,3 +64,11 @@ export type IsRealImageParams = {
     input: string
     check?: CheckOption,
 } | Buffer;
+
+export type IsRealImageReturnType = ImageType | boolean;
+
+export type GetImageInfoParams = {
+    buffer: Buffer,
+    ext?: string,
+    allowedTypes?: Set<ImageExt>
+}

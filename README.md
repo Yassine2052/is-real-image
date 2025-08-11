@@ -76,8 +76,10 @@ async function main() {
         check: "full-check"
     });
     console.log(imageInfo);
-    // Output: { mime: "image/png", fileExt: "webp", realExt: "png" }
-    // The result confirms a mismatch between the file extension (webp) and the actual format (png).
+    // Mismatch Output: null
+    // Expected Output: { mime: "image/png", fileExt: "png", realExt: "png" }
+    // This confirms a mismatch: the file extension (webp) does not match the actual format (png).
+    // Image MIME types with identical signatures are treated as equivalent (e.g., JPEG and JPG).
 };
 
 main();
@@ -92,6 +94,7 @@ main();
 
 - **Type**: `string`
 - **Description**: The file path (absolute or relative) to the image you want to check. The path points to where the image is stored on disk.
+
 ##### `check` (optional)
 
 - **Type**: `"extension-only" | "header-only" | "full-check"`
@@ -100,6 +103,18 @@ main();
     - **`"extension-only"`**: Checks if the file has a valid image extension (e.g., `.png`, `.jpeg`). Does not inspect the actual file contents.
     - **`"header-only"`**: Checks the file's binary signature (magic number) to determine the file type, ignoring the file extension.
     - **`"full-check"`**: Performs both extension and header validation, checking that the file extension matches its actual contents.
+
+##### `allowedTypes` (optional)
+- **Type**: `Set<ImageExt>`
+- **Default**: `undefined`
+- **Description**: A set of allowed image file extensions (e.g., new Set(["png", "jpg"])). Only files whose
+    - extension appears in this set will be considered valid.
+    - If undefined, all supported image types are allowed.
+    - This set works in combination with the selected validation mode:
+        - "extension-only" → Checks if the file’s extension is in the set.
+        - "header-only" → Checks if the file’s detected type (from its magic number) is in the set.
+        - "full-check" → Ensures both the extension and the detected type are in the set and match each other.
+
 ## Sync/Async
 
 This package offers two methods for verifying image file types:
