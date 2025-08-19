@@ -11,11 +11,9 @@ export function getImageInfo({buffer, ext, allowedTypes}: GetImageInfoParams): I
 
     for(const [signature, options] of IMAGES_HEADERS) {
         if(signature === realSignature.slice(0, signature.length)) {
-            if (ext && !options.realExt.includes(ext as ImageExt)) {
-                return null;
-            }
+            const realExt = options.realExt;
 
-            const matchedExt = options.realExt.find(realExt => isAllowedImageExt(realExt, allowedTypes));
+            const matchedExt = realExt.find(currentExt => isAllowedImageExt(currentExt, allowedTypes));
             if (!matchedExt) {
                 return null;
             }

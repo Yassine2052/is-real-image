@@ -1,5 +1,5 @@
 import { IMAGES_EXTENSIONS } from "../constants";
-import { CheckOption, ImageExt } from "../types";
+import { CheckOption, ImageExt, ImageType } from "../types";
 
 export function isValidCheckOption(value: string): value is CheckOption {
     return value === "full-check" || value === "header-only" || value === "extension-only";
@@ -15,4 +15,9 @@ export function isAllowedImageExt(value: ImageExt, allowedTypes: Set<ImageExt> |
 
 export function isValidImageExt(value: string, allowedTypes?: Set<ImageExt>): value is ImageExt {
     return isImageExt(value) && isAllowedImageExt(value, allowedTypes);
+}
+
+export function extensionMatchesMagicNumber(image : ImageType) : ImageType | null {
+    const { fileExt, realExt } = image;
+    return fileExt === realExt ? image : null;
 }

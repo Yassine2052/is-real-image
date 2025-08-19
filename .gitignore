@@ -5,3 +5,5 @@
 nodemon.json
 
 .env
+
+/**/test.ts

@@ -3,7 +3,7 @@ import { ImageExt, IsRealImageParams, IsRealImageReturnType } from "./types";
 import path from "path";
 import fs from "fs";
 import { getImageInfo } from "./helpers/extractors";
-import { isValidCheckOption, isValidImageExt } from "./helpers/validators";
+import { extensionMatchesMagicNumber, isValidCheckOption, isValidImageExt } from "./helpers/validators";
 import { readFileSignature, readFileSignatureSync } from "./helpers/readers";
 import { IMAGES_EXTENSIONS } from "./constants";
 
@@ -40,7 +40,15 @@ async function isRealImage(args: IsRealImageParams, allowedTypes?: Set<ImageExt>
 
         try {
             const buffer = await readFileSignature(input);
-            return getImageInfo({buffer, ext, allowedTypes}) ?? false;
+            const imageInfo = getImageInfo({buffer, ext, allowedTypes});
+            
+            if(check === "full-check") {
+                const result = typeof imageInfo === "object" && imageInfo ? extensionMatchesMagicNumber(imageInfo) : imageInfo;
+
+                return (result ?? false);
+            }
+
+            return (imageInfo ?? false);
         } catch (err) {
             const message = err instanceof Error ? err.message : "Somthing went wrong";
             throw new IsRealImageError(`Failed to read file signature: ${message}`);
@@ -83,7 +91,15 @@ function isRealImageSync(args: IsRealImageParams, allowedTypes?: Set<ImageExt>):
 
         try {
             const buffer = readFileSignatureSync(input);
-            return getImageInfo({buffer, ext, allowedTypes}) ?? false;
+            const imageInfo = getImageInfo({buffer, ext, allowedTypes});
+            
+            if(check === "full-check") {
+                const result = typeof imageInfo === "object" && imageInfo ? extensionMatchesMagicNumber(imageInfo) : imageInfo;
+
+                return (result ?? false);
+            }
+
+            return (imageInfo ?? false);
         } catch (err) {
             const message = err instanceof Error ? err.message : "Somthing went wrong";
             throw new IsRealImageError(`Failed to read file signature: ${message}`);
